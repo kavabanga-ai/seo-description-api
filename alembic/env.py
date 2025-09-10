@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
+from app import models
 
 # IMPORTANT: import models so that they register on Base.metadata
 from app.config import settings
