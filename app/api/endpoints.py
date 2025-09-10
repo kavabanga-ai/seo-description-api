@@ -118,7 +118,7 @@ def check_status(
     if not product:
         return StatusResponse(
             product_id=product_id,
-            status="Notfound",
+            status="not_found",
             progress=0,
             message="Product not found",
         )
