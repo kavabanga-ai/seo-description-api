@@ -16,7 +16,7 @@ A simple FastAPI application that generates SEO-optimized product descriptions u
 
 1. Clone the repository
 ```bash
-git clone 
+git clone git@gitlab.evoclick.ru:luis/seo-description-api.git
 cd seo-description-api
 ```
 
