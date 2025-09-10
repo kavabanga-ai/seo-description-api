@@ -7,7 +7,7 @@ from pydantic import BaseModel
 # Request schemas
 class GenerateDescriptionRequest(BaseModel):
     product_id: str
-    keywords: List[str]
+    keywords: Optional[List[str]] = None
     basic_info: Optional[str] = None
 
 
