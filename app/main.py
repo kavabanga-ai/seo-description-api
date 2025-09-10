@@ -7,10 +7,16 @@ from app.api.endpoints import router
 from app.database import Base, engine
 from app.services.scheduler import task_scheduler
 
-# Configure logging
+# Configure logging - MUST be before importing scheduler
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
+
+# Suppress APScheduler logging before scheduler starts
+logging.getLogger("apscheduler").setLevel(logging.ERROR)
+logging.getLogger("apscheduler.executors").setLevel(logging.ERROR)
+logging.getLogger("apscheduler.executors.default").setLevel(logging.ERROR)
+logging.getLogger("apscheduler.scheduler").setLevel(logging.ERROR)
 
 
 @asynccontextmanager
