@@ -25,14 +25,13 @@ class DifyAIService:
             # Prepare the prompt
             keywords_str = ", ".join(keywords)
             prompt = f"""Generate an SEO-optimized product description for:
-Product ID: {product_id}
 Keywords: {keywords_str}
 {f'Basic Info: {basic_info}' if basic_info else ''}
 
 Please provide:
-1. A compelling product description (150-200 words)
+1. A compelling product description with perfect matched and trending keywords
 2. Key features as bullet points
-Make it SEO-friendly and engaging."""
+Make it SEO-friendly and engaging and must be in Russian Language"""
 
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(
