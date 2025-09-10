@@ -70,9 +70,13 @@ X-API-Key: your-api-key
 {
   "items": [
     {
-      "product_id": "PROD-12345",
-      "keywords": ["organic", "eco-friendly"],
-      "basic_info": "Product details..."
+      "product_id": "YAMAL-LED600-EXW",
+      "keywords": ["GALAD", "Yamal", "LED-600", "Extra Wide", "прожектор", "промышленное освещение"],
+      "basic_info": "Прожектор Ямал LED-600 (Extra Wide) ГП от GALAD — мощный и энергоэффективный. Отличается широким углом освещения и долговечностью."
+    },
+    {
+      "product_id": "YAMAL-LED600-EXW-basic",
+      "basic_info": "Прожектор Ямал LED-600 (Extra Wide) ГП — промыш­ленный светодиодный прожектор от GALAD, широкое освещение."
     }
   ]
 }
