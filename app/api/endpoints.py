@@ -69,7 +69,7 @@ def generate_description(
                         http_status=409,
                         error="ALREADY_PROCESSING",
                         message=f"Product {item.product_id} is already being processed."
-                        f" Please wait for completion.",
+                        f"Please wait for completion.",
                     )
                 )
             else:
@@ -101,8 +101,6 @@ def generate_description(
                     created_at=new_product.created_at,
                 )
             )
-
-    # Return 202 if all items were enqueued, otherwise 200
 
     return GenerateDescriptionResponse(summary=summary, items=response_items)
 
