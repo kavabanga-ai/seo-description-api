@@ -9,3 +9,5 @@ httpx
 apscheduler
 asyncpg
 black
+flake8
+isort
