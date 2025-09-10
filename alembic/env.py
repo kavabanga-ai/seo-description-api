@@ -1,10 +1,11 @@
-from logging.config import fileConfig
 import os
 import sys
+from logging.config import fileConfig
+
+from dotenv import load_dotenv
+from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-from sqlalchemy import engine_from_config, pool
-from dotenv import load_dotenv
 
 # ---- Make project root importable (alembic/env.py -> project root) ----
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))

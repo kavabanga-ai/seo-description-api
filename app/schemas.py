@@ -1,7 +1,7 @@
-from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
 from datetime import datetime
-from app.models import StatusEnum
+from typing import List, Optional
+
+from pydantic import BaseModel
 
 
 # Request schemas

@@ -1,14 +1,15 @@
-from fastapi import FastAPI
-from contextlib import asynccontextmanager
 import logging
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+
 from app.api.endpoints import router
 from app.database import Base, engine
 from app.services.scheduler import task_scheduler
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
 
@@ -28,7 +29,7 @@ app = FastAPI(
     title="SEO Description Generator API",
     description="API for generating SEO-optimized product descriptions using AI",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # Include routers
@@ -40,7 +41,7 @@ def read_root():
     return {
         "name": "SEO Description Generator API",
         "version": "1.0.0",
-        "status": "running"
+        "status": "running",
     }
 
 

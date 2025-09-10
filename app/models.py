@@ -1,6 +1,8 @@
-from sqlalchemy import Column, String, DateTime, Text, Enum
-from sqlalchemy.sql import func
 import enum
+
+from sqlalchemy import Column, DateTime, Enum, String, Text
+from sqlalchemy.sql import func
+
 from app.database import Base
 
 
@@ -22,4 +24,6 @@ class Product(Base):
     basic_info = Column(Text, nullable=True)
     error_message = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), onupdate=func.now(), server_default=func.now()
+    )

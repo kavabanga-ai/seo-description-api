@@ -1,8 +1,9 @@
-import httpx
-import json
-from typing import Dict, Any, Optional
-from app.config import settings
 import logging
+from typing import Any, Dict
+
+import httpx
+
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -13,11 +14,12 @@ class DifyAIService:
         self.api_key = settings.DIFY_API_KEY
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
-    async def generate_description(self, product_id: str, keywords: list,
-                                   basic_info: str = None) -> Dict[str, Any]:
+    async def generate_description(
+        self, product_id: str, keywords: list, basic_info: str = None
+    ) -> Dict[str, Any]:
         """Generate SEO description using Dify AI"""
         try:
             # Prepare the prompt
@@ -41,8 +43,8 @@ Make it SEO-friendly and engaging."""
                         "query": prompt,
                         "response_mode": "blocking",
                         "user": f"api-{product_id}",
-                        "conversation_id": ""
-                    }
+                        "conversation_id": "",
+                    },
                 )
 
                 if response.status_code == 200:
@@ -57,21 +59,20 @@ Make it SEO-friendly and engaging."""
                     return {
                         "success": True,
                         "description": description,
-                        "features": features
+                        "features": features,
                     }
                 else:
-                    logger.error(f"AI API error: {response.status_code} - {response.text}")
+                    logger.error(
+                        f"AI API error: {response.status_code} - {response.text}"
+                    )
                     return {
                         "success": False,
-                        "error": f"AI service returned {response.status_code}"
+                        "error": f"AI service returned {response.status_code}",
                     }
 
         except Exception as e:
             logger.error(f"Error generating description: {str(e)}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
 
 ai_service = DifyAIService()

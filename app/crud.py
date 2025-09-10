@@ -1,7 +1,9 @@
+import json
+
 from sqlalchemy.orm import Session
+
 from app.models import Product, StatusEnum
 from app.schemas import GenerateDescriptionRequest
-import json
 
 
 def get_product(db: Session, product_id: str):
@@ -13,7 +15,7 @@ def create_product(db: Session, request: GenerateDescriptionRequest):
         product_id=request.product_id,
         status=StatusEnum.pending,
         keywords=json.dumps(request.keywords),
-        basic_info=request.basic_info
+        basic_info=request.basic_info,
     )
     db.add(db_product)
     db.commit()
@@ -21,8 +23,13 @@ def create_product(db: Session, request: GenerateDescriptionRequest):
     return db_product
 
 
-def update_product_status(db: Session, product_id: str, status: StatusEnum,
-                          description: str = None, error_message: str = None):
+def update_product_status(
+    db: Session,
+    product_id: str,
+    status: StatusEnum,
+    description: str = None,
+    error_message: str = None,
+):
     product = get_product(db, product_id)
     if product:
         product.status = status
@@ -45,6 +52,9 @@ def delete_product(db: Session, product_id: str):
 
 
 def get_pending_products(db: Session, limit: int = 10):
-    return db.query(Product).filter(
-        Product.status == StatusEnum.pending
-    ).limit(limit).all()
+    return (
+        db.query(Product)
+        .filter(Product.status == StatusEnum.pending)
+        .limit(limit)
+        .all()
+    )
