@@ -7,28 +7,33 @@ from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 
-# ---- Make project root importable (alembic/env.py -> project root) ----
+# IMPORTANT: import models so that they register on Base.metadata
+from app.config import settings
+from app.database import Base
+
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-# ---- Load environment variables and app settings ----
+# -----------------------------------------------------------------------------
+# Load environment variables and app settings
+# -----------------------------------------------------------------------------
 load_dotenv()  # loads .env at project root
-from app.config import settings  # noqa: E402
-from app.database import Base  # noqa: E402
 
-# ---- Alembic config ----
+# -----------------------------------------------------------------------------
+# Alembic Config
+# -----------------------------------------------------------------------------
 config = context.config
 
-# override sqlalchemy.url from .env / app settings
+# Override sqlalchemy.url from app settings / .env
 if settings.DATABASE_URL:
     config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
-# Logging config from alembic.ini
+# Interpret the config file for Python logging.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# ---- Target metadata for 'alembic revision --autogenerate' ----
+# Target metadata for 'alembic revision --autogenerate'
 target_metadata = Base.metadata
 
 
