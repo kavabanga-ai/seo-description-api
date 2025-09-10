@@ -14,7 +14,7 @@ def create_product(db: Session, request: GenerateDescriptionRequest):
     db_product = Product(
         product_id=request.product_id,
         status=StatusEnum.pending,
-        keywords=json.dumps(request.keywords),
+        keywords=json.dumps(request.keywords) if request.keywords else json.dumps([]),
         basic_info=request.basic_info,
     )
     db.add(db_product)
