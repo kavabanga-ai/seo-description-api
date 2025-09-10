@@ -62,8 +62,8 @@ class TaskScheduler:
                             description=full_description,
                         )
                         logger.info(
-                            f"Successfully generated"
-                            f" description for {product.product_id}"
+                            f"Successfully generated "
+                            f"description for {product.product_id}"
                         )
                     else:
                         update_product_status(
@@ -104,8 +104,8 @@ class TaskScheduler:
         )
         self.scheduler.start()
         logger.info(
-            f"Scheduler started with interval:"
-            f" {settings.SCHEDULER_INTERVAL_SECONDS} seconds"
+            f"Scheduler started with "
+            f"interval: {settings.SCHEDULER_INTERVAL_SECONDS} seconds"
         )
 
     def stop(self):
