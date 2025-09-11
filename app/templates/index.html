@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="LUIS SEO Description Generator - AI-powered product description generation">
+    <title>SEO Description Generator</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="container">
+    <!-- Header -->
+    <header class="header">
+        <h1>🚀 LUIS SEO Description Generator</h1>
+        <p>AI-Powered Product Description Generation System</p>
+    </header>
+
+    <!-- API Configuration -->
+    <div class="card config-card">
+        <h2>⚙️ Configuration</h2>
+        <div class="config-content">
+            <div class="form-group">
+                <label for="apiKey">API Key</label>
+                <input type="password" id="apiKey" placeholder="Enter your API key" value="default-api-key">
+            </div>
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="app.testConnection()">
+                    <span id="testBtnText">Test Connection</span>
+                </button>
+                <span class="status-indicator" id="connectionStatus"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="tabs">
+        <button class="tab active" data-tab="generate" onclick="app.switchTab('generate')">
+            <span class="tab-icon">📝</span>
+            <span class="tab-text">Generate</span>
+        </button>
+        <button class="tab" data-tab="batch" onclick="app.switchTab('batch')">
+            <span class="tab-icon">📦</span>
+            <span class="tab-text">Batch</span>
+        </button>
+        <button class="tab" data-tab="status" onclick="app.switchTab('status')">
+            <span class="tab-icon">📊</span>
+            <span class="tab-text">Status</span>
+        </button>
+        <button class="tab" data-tab="retrieve" onclick="app.switchTab('retrieve')">
+            <span class="tab-icon">📥</span>
+            <span class="tab-text">Retrieve</span>
+        </button>
+    </nav>
+
+    <!-- Tab Contents -->
+    <main class="content">
+        <!-- Generate Single -->
+        <div class="tab-content active" id="generate-tab">
+            <div class="card">
+                <h2>Generate Product Description</h2>
+                <form id="generateForm" onsubmit="app.generateDescription(event)">
+                    <div class="form-group">
+                        <label for="productId">Product ID *</label>
+                        <input type="text" id="productId" required placeholder="e.g., PROD-001">
+                    </div>
+                    <div class="form-group">
+                        <label for="keywords">Keywords (comma-separated)</label>
+                        <input type="text" id="keywords" placeholder="e.g., LED, energy-saving, industrial">
+                    </div>
+                    <div class="form-group">
+                        <label for="basicInfo">Basic Information</label>
+                        <textarea id="basicInfo" rows="4" placeholder="Enter product details..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <span id="genBtnText">Generate Description</span>
+                    </button>
+                </form>
+                <div class="result-box" id="generateResult"></div>
+            </div>
+        </div>
+
+        <!-- Batch Generate -->
+        <div class="tab-content" id="batch-tab">
+            <div class="card">
+                <h2>Batch Generate Descriptions</h2>
+                <div id="batchProducts">
+                    <!-- Products will be added here dynamically -->
+                </div>
+                <div class="batch-actions">
+                    <button class="btn btn-secondary" onclick="app.addProduct()">
+                        + Add Product
+                    </button>
+                    <button class="btn btn-primary" onclick="app.batchGenerate()">
+                        Generate All
+                    </button>
+                    <button class="btn btn-outline" onclick="app.clearBatch()">
+                        Clear All
+                    </button>
+                </div>
+                <div class="result-box" id="batchResult"></div>
+            </div>
+        </div>
+
+        <!-- Check Status -->
+        <div class="tab-content" id="status-tab">
+            <div class="card">
+                <h2>Check Generation Status</h2>
+                <form id="statusForm" onsubmit="app.checkStatus(event)">
+                    <div class="form-group">
+                        <label for="statusProductId">Product ID *</label>
+                        <input type="text" id="statusProductId" required placeholder="e.g., PROD-001">
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            Check Status
+                        </button>
+                        <button type="button" class="btn btn-secondary" onclick="app.togglePolling()" id="pollBtn">
+                            Start Auto-Refresh
+                        </button>
+                    </div>
+                </form>
+                <div class="result-box" id="statusResult"></div>
+            </div>
+        </div>
+
+        <!-- Retrieve Description -->
+        <div class="tab-content" id="retrieve-tab">
+            <div class="card">
+                <h2>Retrieve Generated Description</h2>
+                <form id="retrieveForm" onsubmit="app.retrieveDescription(event)">
+                    <div class="form-group">
+                        <label for="retrieveProductId">Product ID *</label>
+                        <input type="text" id="retrieveProductId" required placeholder="e.g., PROD-001">
+                    </div>
+                    <div class="form-group">
+                        <label for="contentType">Content Type</label>
+                        <select id="contentType">
+                            <option value="">All Content</option>
+                            <option value="description">Description Only</option>
+                            <option value="features">Features Only</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        Retrieve
+                    </button>
+                </form>
+                <div class="result-box" id="retrieveResult"></div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="spinner"></div>
+</div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
