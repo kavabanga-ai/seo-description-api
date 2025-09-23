@@ -80,7 +80,7 @@ app.add_middleware(
 )
 
 # Include API routers
-app.include_router(router, prefix="/v1")
+app.include_router(router, prefix="/api/v1")
 
 
 # Frontend route - this should be AFTER API routes
