@@ -98,7 +98,7 @@ const app = {
         };
 
         try {
-            const response = await fetch(`${this.apiUrl}/v1/generate`, {
+            const response = await fetch(`${this.apiUrl}/api/v1/generate`, {
                 method: 'POST',
                 headers: this.getHeaders(),
                 body: JSON.stringify(requestBody)
@@ -155,7 +155,7 @@ const app = {
         const resultBox = document.getElementById('statusResult');
 
         try {
-            const response = await fetch(`${this.apiUrl}/v1/status/${productId}`, {
+            const response = await fetch(`${this.apiUrl}/api/v1/status/${productId}`, {
                 headers: this.getHeaders()
             });
 
@@ -258,7 +258,7 @@ const app = {
         this.setLoading(true);
 
         try {
-            let url = `${this.apiUrl}/v1/description/${productId}`;
+            let url = `${this.apiUrl}/api/v1/description/${productId}`;
             if (contentType) {
                 url += `?only=${contentType}`;
             }
@@ -430,7 +430,7 @@ const app = {
         this.setLoading(true);
 
         try {
-            const response = await fetch(`${this.apiUrl}/v1/generate`, {
+            const response = await fetch(`${this.apiUrl}/api/v1/generate`, {
                 method: 'POST',
                 headers: this.getHeaders(),
                 body: JSON.stringify({items})
