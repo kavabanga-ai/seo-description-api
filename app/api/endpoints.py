@@ -28,9 +28,9 @@ def verify_api_key(x_api_key: str = Header(None)):
 
 @router.post("/generate", response_model=GenerateDescriptionResponse)
 def generate_description(
-        request: GenerateDescriptionBatchRequest,
-        db: Session = Depends(get_db),
-        api_key: str = Depends(verify_api_key),
+    request: GenerateDescriptionBatchRequest,
+    db: Session = Depends(get_db),
+    api_key: str = Depends(verify_api_key),
 ):
     """Generate SEO descriptions for products"""
 
@@ -68,8 +68,9 @@ def generate_description(
                         product_id=item.product_id,
                         http_status=409,
                         error="ALREADY_PROCESSING",
-                        message=f"Product {item.product_id} is already being processed. "
-                                f"Please wait for completion.",
+                        message=f"Product {item.product_id}"
+                        f" is already being processed. "
+                        f"Please wait for completion.",
                     )
                 )
             else:
@@ -107,9 +108,9 @@ def generate_description(
 
 @router.get("/status/{product_id}", response_model=StatusResponse)
 def check_status(
-        product_id: str,
-        db: Session = Depends(get_db),
-        api_key: str = Depends(verify_api_key),
+    product_id: str,
+    db: Session = Depends(get_db),
+    api_key: str = Depends(verify_api_key),
 ):
     """Check generation status for a product"""
 
@@ -151,10 +152,10 @@ def check_status(
 
 @router.get("/description/{product_id}", response_model=DescriptionResponse)
 def get_description(
-        product_id: str,
-        only: Optional[str] = Query(None, regex="^(features|description|specifications)$"),
-        db: Session = Depends(get_db),
-        api_key: str = Depends(verify_api_key),
+    product_id: str,
+    only: Optional[str] = Query(None, regex="^(features|description|specifications)$"),
+    db: Session = Depends(get_db),
+    api_key: str = Depends(verify_api_key),
 ):
     """Get generated description for a product"""
 

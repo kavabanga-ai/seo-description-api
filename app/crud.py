@@ -24,12 +24,12 @@ def create_product(db: Session, request: GenerateDescriptionRequest):
 
 
 def update_product_status(
-        db: Session,
-        product_id: str,
-        status: StatusEnum,
-        description: str = None,
-        specifications: str = None,
-        error_message: str = None,
+    db: Session,
+    product_id: str,
+    status: StatusEnum,
+    description: str = None,
+    specifications: str = None,
+    error_message: str = None,
 ):
     product = get_product(db, product_id)
     if product:

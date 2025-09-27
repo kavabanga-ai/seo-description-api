@@ -18,7 +18,7 @@ class DifyAIService:
         }
 
     async def generate_description(
-            self, product_id: str, keywords: list, basic_info: str = None
+        self, product_id: str, keywords: list, basic_info: str = None
     ) -> Dict[str, Any]:
         """Generate SEO description using Dify AI"""
         try:
@@ -81,7 +81,9 @@ Make it SEO-friendly and engaging and must be in Russian Language"""
                     }
 
         except httpx.TimeoutException:
-            logger.warning(f"Timeout generating description for {product_id}, will retry")
+            logger.warning(
+                f"Timeout generating description for {product_id}, will retry"
+            )
             return {"success": False, "error": "timeout", "retry": True}
         except Exception as e:
             logger.error(f"Error generating description: {str(e)}")

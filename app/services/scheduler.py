@@ -68,7 +68,8 @@ class TaskScheduler:
                                 product.product_id,
                                 StatusEnum.completed,
                                 description=full_description,
-                                specifications=specifications,  # This requires DB update
+                                specifications=specifications,
+                                # This requires DB update
                             )
                             logger.info(
                                 f"Successfully generated "
@@ -91,8 +92,10 @@ class TaskScheduler:
                                     f"Max retries reached for {product.product_id}, "
                                     f"keeping in processing state"
                                 )
-                                # Keep the status as processing so it can be retried later
-                                # Don't update to failed unless Dify explicitly returns an error
+                                # Keep the status as processing
+                                # so it can be retried later
+                                # Don't update to failed
+                                # unless Dify explicitly returns an error
                         else:
                             # Actual error from Dify, mark as failed
                             update_product_status(
@@ -102,14 +105,16 @@ class TaskScheduler:
                                 error_message=result.get("error", "Unknown error"),
                             )
                             logger.error(
-                                f"Failed to generate description for {product.product_id}: "
+                                f"Failed to generate "
+                                f"description for {product.product_id}: "
                                 f"{result.get('error')}"
                             )
                             success = True  # Exit retry loop
 
                 except Exception as e:
                     logger.error(
-                        f"Unexpected error processing product {product.product_id}: {str(e)}"
+                        f"Unexpected error "
+                        f"processing product {product.product_id}: {str(e)}"
                     )
                     # Only mark as failed for unexpected errors
                     update_product_status(
