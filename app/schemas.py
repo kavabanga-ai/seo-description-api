@@ -51,5 +51,6 @@ class StatusResponse(BaseModel):
 class DescriptionResponse(BaseModel):
     product_id: str
     description: Optional[str] = None
-    features: Optional[str] = None
+    features: Optional[str] = None  # Kept for backwards compatibility
+    specifications: Optional[str] = None  # New field for specifications
     generated_at: Optional[datetime] = None
