@@ -18,7 +18,7 @@ class DifyAIService:
         }
 
     async def generate_description(
-        self, product_id: str, keywords: list, basic_info: str = None
+            self, product_id: str, keywords: list, basic_info: str = None
     ) -> Dict[str, Any]:
         """Generate SEO description using Dify AI"""
         try:
@@ -30,10 +30,12 @@ Keywords: {keywords_str}
 
 Please provide:
 1. A compelling product description with perfect matched and trending keywords
-2. Key features as bullet points
+2. After the description, add "Характеристики:" on a new line
+3. Below "Характеристики:" provide key specifications as bullet points
 Make it SEO-friendly and engaging and must be in Russian Language"""
 
-            async with httpx.AsyncClient(timeout=30.0) as client:
+            # Increased timeout to 120 seconds (2 minutes)
+            async with httpx.AsyncClient(timeout=120.0) as client:
                 response = await client.post(
                     f"{self.base_url}/chat-messages",
                     headers=self.headers,
@@ -50,15 +52,24 @@ Make it SEO-friendly and engaging and must be in Russian Language"""
                     data = response.json()
                     answer = data.get("answer", "")
 
-                    # Parse the answer to extract description and features
-                    parts = answer.split("\n\n")
-                    description = parts[0] if parts else answer
-                    features = "\n".join(parts[1:]) if len(parts) > 1 else ""
+                    # Parse the answer splitting by "Характеристики:"
+                    description = answer
+                    specifications = ""
+
+                    if "Характеристики:" in answer:
+                        parts = answer.split("Характеристики:", 1)
+                        description = parts[0].strip()
+                        specifications = parts[1].strip() if len(parts) > 1 else ""
+                    elif "Характеристики" in answer:
+                        # Handle case without colon
+                        parts = answer.split("Характеристики", 1)
+                        description = parts[0].strip()
+                        specifications = parts[1].strip() if len(parts) > 1 else ""
 
                     return {
                         "success": True,
                         "description": description,
-                        "features": features,
+                        "specifications": specifications,
                     }
                 else:
                     logger.error(
@@ -69,6 +80,9 @@ Make it SEO-friendly and engaging and must be in Russian Language"""
                         "error": f"AI service returned {response.status_code}",
                     }
 
+        except httpx.TimeoutException:
+            logger.warning(f"Timeout generating description for {product_id}, will retry")
+            return {"success": False, "error": "timeout", "retry": True}
         except Exception as e:
             logger.error(f"Error generating description: {str(e)}")
             return {"success": False, "error": str(e)}
