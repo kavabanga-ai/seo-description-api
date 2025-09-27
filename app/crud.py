@@ -24,18 +24,21 @@ def create_product(db: Session, request: GenerateDescriptionRequest):
 
 
 def update_product_status(
-    db: Session,
-    product_id: str,
-    status: StatusEnum,
-    description: str = None,
-    error_message: str = None,
+        db: Session,
+        product_id: str,
+        status: StatusEnum,
+        description: str = None,
+        specifications: str = None,
+        error_message: str = None,
 ):
     product = get_product(db, product_id)
     if product:
         product.status = status
-        if description:
+        if description is not None:
             product.description = description
-        if error_message:
+        if specifications is not None:
+            product.specifications = specifications
+        if error_message is not None:
             product.error_message = error_message
         db.commit()
         db.refresh(product)
