@@ -17,6 +17,8 @@ class TaskScheduler:
     def __init__(self):
         self.scheduler = AsyncIOScheduler()
         self.is_processing = False
+        self.max_retries = 3  # Maximum number of retries
+        self.retry_delay = 10  # Delay between retries in seconds
 
     async def process_pending_tasks(self):
         """Process pending product descriptions"""
@@ -44,42 +46,72 @@ class TaskScheduler:
                     # Parse keywords from JSON
                     keywords = json.loads(product.keywords) if product.keywords else []
 
-                    # Generate description using AI
-                    result = await ai_service.generate_description(
-                        product.product_id, keywords, product.basic_info
-                    )
+                    # Retry logic for API calls
+                    retries = 0
+                    success = False
 
-                    if result["success"]:
-                        # Combine description and features
-                        full_description = result["description"]
-                        if result.get("features"):
-                            full_description += f"\n\nFeatures:\n{result['features']}"
+                    while retries < self.max_retries and not success:
+                        # Generate description using AI
+                        result = await ai_service.generate_description(
+                            product.product_id, keywords, product.basic_info
+                        )
 
-                        update_product_status(
-                            db,
-                            product.product_id,
-                            StatusEnum.completed,
-                            description=full_description,
-                        )
-                        logger.info(
-                            f"Successfully generated "
-                            f"description for {product.product_id}"
-                        )
-                    else:
-                        update_product_status(
-                            db,
-                            product.product_id,
-                            StatusEnum.failed,
-                            error_message=result.get("error", "Unknown error"),
-                        )
-                        logger.error(
-                            f"Failed to generate description for {product.product_id}"
-                        )
+                        if result["success"]:
+                            # Combine description and specifications
+                            full_description = result["description"]
+
+                            # Store specifications separately if present
+                            specifications = result.get("specifications", "")
+
+                            update_product_status(
+                                db,
+                                product.product_id,
+                                StatusEnum.completed,
+                                description=full_description,
+                                specifications=specifications,  # This requires DB update
+                            )
+                            logger.info(
+                                f"Successfully generated "
+                                f"description for {product.product_id}"
+                            )
+                            success = True
+                        elif result.get("retry", False):
+                            # This was a timeout, retry
+                            retries += 1
+                            if retries < self.max_retries:
+                                logger.info(
+                                    f"Retrying {product.product_id} "
+                                    f"(attempt {retries + 1}/{self.max_retries})"
+                                )
+                                await asyncio.sleep(self.retry_delay)
+                            else:
+                                # Max retries reached, still treat as processing
+                                # Don't mark as failed yet
+                                logger.warning(
+                                    f"Max retries reached for {product.product_id}, "
+                                    f"keeping in processing state"
+                                )
+                                # Keep the status as processing so it can be retried later
+                                # Don't update to failed unless Dify explicitly returns an error
+                        else:
+                            # Actual error from Dify, mark as failed
+                            update_product_status(
+                                db,
+                                product.product_id,
+                                StatusEnum.failed,
+                                error_message=result.get("error", "Unknown error"),
+                            )
+                            logger.error(
+                                f"Failed to generate description for {product.product_id}: "
+                                f"{result.get('error')}"
+                            )
+                            success = True  # Exit retry loop
 
                 except Exception as e:
                     logger.error(
-                        f"Error processing product {product.product_id}: {str(e)}"
+                        f"Unexpected error processing product {product.product_id}: {str(e)}"
                     )
+                    # Only mark as failed for unexpected errors
                     update_product_status(
                         db, product.product_id, StatusEnum.failed, error_message=str(e)
                     )
