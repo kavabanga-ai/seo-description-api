@@ -28,9 +28,9 @@ def verify_api_key(x_api_key: str = Header(None)):
 
 @router.post("/generate", response_model=GenerateDescriptionResponse)
 def generate_description(
-    request: GenerateDescriptionBatchRequest,
-    db: Session = Depends(get_db),
-    api_key: str = Depends(verify_api_key),
+        request: GenerateDescriptionBatchRequest,
+        db: Session = Depends(get_db),
+        api_key: str = Depends(verify_api_key),
 ):
     """Generate SEO descriptions for products"""
 
@@ -59,7 +59,7 @@ def generate_description(
         existing_product = get_product(db, item.product_id)
 
         if existing_product:
-            if existing_product.status == StatusEnum.pending:
+            if existing_product.status in [StatusEnum.pending, StatusEnum.processing]:
                 # Product is already being processed
                 summary.conflicted += 1
                 response_items.append(
@@ -68,8 +68,8 @@ def generate_description(
                         product_id=item.product_id,
                         http_status=409,
                         error="ALREADY_PROCESSING",
-                        message=f"Product {item.product_id} is already being processed."
-                        f"Please wait for completion.",
+                        message=f"Product {item.product_id} is already being processed. "
+                                f"Please wait for completion.",
                     )
                 )
             else:
@@ -107,9 +107,9 @@ def generate_description(
 
 @router.get("/status/{product_id}", response_model=StatusResponse)
 def check_status(
-    product_id: str,
-    db: Session = Depends(get_db),
-    api_key: str = Depends(verify_api_key),
+        product_id: str,
+        db: Session = Depends(get_db),
+        api_key: str = Depends(verify_api_key),
 ):
     """Check generation status for a product"""
 
@@ -133,7 +133,7 @@ def check_status(
 
     message_map = {
         StatusEnum.pending: "Waiting in queue",
-        StatusEnum.processing: "Generating description",
+        StatusEnum.processing: "Generating description (this may take a few minutes)",
         StatusEnum.completed: "Description generated successfully",
         StatusEnum.failed: product.error_message or "Generation failed",
     }
@@ -151,10 +151,10 @@ def check_status(
 
 @router.get("/description/{product_id}", response_model=DescriptionResponse)
 def get_description(
-    product_id: str,
-    only: Optional[str] = Query(None, regex="^(features|description)$"),
-    db: Session = Depends(get_db),
-    api_key: str = Depends(verify_api_key),
+        product_id: str,
+        only: Optional[str] = Query(None, regex="^(features|description|specifications)$"),
+        db: Session = Depends(get_db),
+        api_key: str = Depends(verify_api_key),
 ):
     """Get generated description for a product"""
 
@@ -169,14 +169,20 @@ def get_description(
             detail=f"Description not ready. Current status: {product.status.value}",
         )
 
-    # Parse description and features
+    # Get description and specifications from database
     description = product.description or ""
-    features = ""
+    specifications = product.specifications or ""
 
-    if "Features:" in description:
-        parts = description.split("Features:")
+    # For backwards compatibility, also check if specifications are in the description
+    # This handles old data where specifications weren't stored separately
+    if not specifications and "Характеристики:" in description:
+        parts = description.split("Характеристики:", 1)
         description = parts[0].strip()
-        features = parts[1].strip() if len(parts) > 1 else ""
+        specifications = parts[1].strip() if len(parts) > 1 else ""
+    elif not specifications and "Характеристики" in description:
+        parts = description.split("Характеристики", 1)
+        description = parts[0].strip()
+        specifications = parts[1].strip() if len(parts) > 1 else ""
 
     # Filter based on 'only' parameter
     if only == "description":
@@ -185,14 +191,24 @@ def get_description(
             description=description,
             generated_at=product.updated_at,
         )
-    elif only == "features":
+    elif only == "specifications":
         return DescriptionResponse(
-            product_id=product_id, features=features, generated_at=product.updated_at
+            product_id=product_id,
+            specifications=specifications,
+            generated_at=product.updated_at,
+        )
+    elif only == "features":
+        # Legacy support for "features" - returns specifications
+        return DescriptionResponse(
+            product_id=product_id,
+            features=specifications,
+            generated_at=product.updated_at,
         )
     else:
         return DescriptionResponse(
             product_id=product_id,
             description=description,
-            features=features,
+            features=specifications,  # Keep "features" for backwards compatibility
+            specifications=specifications,
             generated_at=product.updated_at,
         )
