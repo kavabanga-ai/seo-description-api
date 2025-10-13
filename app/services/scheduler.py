@@ -40,17 +40,43 @@ class TaskScheduler:
             # Process each product
             for product in pending_products:
                 try:
+                    logger.info(f"\n{'=' * 60}")
+                    logger.info(f"Processing product: {product.product_id}")
+                    logger.info(f"{'=' * 60}")
+
                     # Update status to processing
                     update_product_status(db, product.product_id, StatusEnum.processing)
 
-                    # Parse keywords from JSON
-                    keywords = json.loads(product.keywords) if product.keywords else []
+                    # Parse keywords from JSON - WITH DETAILED LOGGING
+                    keywords_raw = product.keywords
+                    logger.info(f"[{product.product_id}] Raw keywords from DB: {keywords_raw}")
+                    logger.info(f"[{product.product_id}] Keywords type: {type(keywords_raw)}")
+                    logger.info(
+                        f"[{product.product_id}] Keywords length (raw): {len(keywords_raw) if keywords_raw else 0}")
+
+                    try:
+                        keywords = json.loads(keywords_raw) if keywords_raw else []
+                        logger.info(f"[{product.product_id}] Parsed keywords count: {len(keywords)}")
+                        logger.info(f"[{product.product_id}] Parsed keywords type: {type(keywords)}")
+
+                        # Log all keywords for debugging
+                        if keywords:
+                            logger.info(f"[{product.product_id}] === ALL KEYWORDS ===")
+                            for idx, kw in enumerate(keywords, 1):
+                                logger.info(f"[{product.product_id}]   {idx}. {kw}")
+                            logger.info(f"[{product.product_id}] === END KEYWORDS ===")
+
+                    except json.JSONDecodeError as e:
+                        logger.error(f"[{product.product_id}] Failed to parse keywords JSON: {e}")
+                        keywords = []
 
                     # Retry logic for API calls
                     retries = 0
                     success = False
 
                     while retries < self.max_retries and not success:
+                        logger.info(f"[{product.product_id}] Attempt {retries + 1}/{self.max_retries}")
+
                         # Generate description using AI
                         result = await ai_service.generate_description(
                             product.product_id, keywords, product.basic_info
@@ -63,17 +89,35 @@ class TaskScheduler:
                             # Store specifications separately if present
                             specifications = result.get("specifications", "")
 
+                            # Log metadata if available
+                            if "metadata" in result:
+                                metadata = result["metadata"]
+                                logger.info(f"[{product.product_id}] Generation metadata: {metadata}")
+
+                                # Check if keyword count matches
+                                keywords_sent = metadata.get("keywords_sent", 0)
+                                keywords_original = metadata.get("keywords_original", 0)
+
+                                if keywords_sent != keywords_original:
+                                    logger.warning(
+                                        f"[{product.product_id}] Keyword count mismatch! "
+                                        f"Original: {keywords_original}, Sent: {keywords_sent}"
+                                    )
+                                elif keywords_sent != len(keywords):
+                                    logger.warning(
+                                        f"[{product.product_id}] Keyword count mismatch! "
+                                        f"Expected: {len(keywords)}, Sent: {keywords_sent}"
+                                    )
+
                             update_product_status(
                                 db,
                                 product.product_id,
                                 StatusEnum.completed,
                                 description=full_description,
                                 specifications=specifications,
-                                # This requires DB update
                             )
                             logger.info(
-                                f"Successfully generated "
-                                f"description for {product.product_id}"
+                                f"[{product.product_id}] ✓ Successfully generated description"
                             )
                             success = True
                         elif result.get("retry", False):
@@ -81,7 +125,7 @@ class TaskScheduler:
                             retries += 1
                             if retries < self.max_retries:
                                 logger.info(
-                                    f"Retrying {product.product_id} "
+                                    f"[{product.product_id}] Retrying after timeout "
                                     f"(attempt {retries + 1}/{self.max_retries})"
                                 )
                                 await asyncio.sleep(self.retry_delay)
@@ -89,7 +133,7 @@ class TaskScheduler:
                                 # Max retries reached, still treat as processing
                                 # Don't mark as failed yet
                                 logger.warning(
-                                    f"Max retries reached for {product.product_id}, "
+                                    f"[{product.product_id}] Max retries reached, "
                                     f"keeping in processing state"
                                 )
                                 # Keep the status as processing
@@ -98,23 +142,23 @@ class TaskScheduler:
                                 # unless Dify explicitly returns an error
                         else:
                             # Actual error from Dify, mark as failed
+                            error_msg = result.get("error", "Unknown error")
                             update_product_status(
                                 db,
                                 product.product_id,
                                 StatusEnum.failed,
-                                error_message=result.get("error", "Unknown error"),
+                                error_message=error_msg,
                             )
                             logger.error(
-                                f"Failed to generate "
-                                f"description for {product.product_id}: "
-                                f"{result.get('error')}"
+                                f"[{product.product_id}] ✗ Failed to generate "
+                                f"description: {error_msg}"
                             )
                             success = True  # Exit retry loop
 
                 except Exception as e:
                     logger.error(
-                        f"Unexpected error "
-                        f"processing product {product.product_id}: {str(e)}"
+                        f"[{product.product_id}] Unexpected error: {str(e)}",
+                        exc_info=True
                     )
                     # Only mark as failed for unexpected errors
                     update_product_status(
@@ -125,7 +169,7 @@ class TaskScheduler:
                 await asyncio.sleep(0.5)
 
         except Exception as e:
-            logger.error(f"Scheduler error: {str(e)}")
+            logger.error(f"Scheduler error: {str(e)}", exc_info=True)
         finally:
             db.close()
             self.is_processing = False
