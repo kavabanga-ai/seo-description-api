@@ -11,10 +11,18 @@ def get_product(db: Session, product_id: str):
 
 
 def create_product(db: Session, request: GenerateDescriptionRequest):
+    # Convert features to JSON string
+    features_json = json.dumps([])
+    if request.features:
+        # Use model_dump() for Pydantic v2 compatibility
+        features_json = json.dumps(
+            [f.model_dump() if hasattr(f, "model_dump") else f.dict() for f in request.features]
+        )
+
     db_product = Product(
         product_id=request.product_id,
         status=StatusEnum.pending,
-        keywords=json.dumps(request.keywords) if request.keywords else json.dumps([]),
+        features=features_json,
         basic_info=request.basic_info,
     )
     db.add(db_product)

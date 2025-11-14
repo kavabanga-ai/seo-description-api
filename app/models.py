@@ -20,7 +20,7 @@ class Product(Base):
     status = Column(Enum(StatusEnum), default=StatusEnum.pending, nullable=False)
     description = Column(Text, nullable=True)
     specifications = Column(Text, nullable=True)
-    keywords = Column(Text, nullable=True)  # Store as JSON string
+    features = Column(Text, nullable=True)  # Store as JSON string
     basic_info = Column(Text, nullable=True)
     error_message = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

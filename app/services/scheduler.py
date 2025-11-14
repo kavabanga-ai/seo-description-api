@@ -43,8 +43,8 @@ class TaskScheduler:
                     # Update status to processing
                     update_product_status(db, product.product_id, StatusEnum.processing)
 
-                    # Parse keywords from JSON
-                    keywords = json.loads(product.keywords) if product.keywords else []
+                    # Parse features from JSON
+                    features = json.loads(product.features) if product.features else []
 
                     # Retry logic for API calls
                     retries = 0
@@ -53,7 +53,7 @@ class TaskScheduler:
                     while retries < self.max_retries and not success:
                         # Generate description using AI
                         result = await ai_service.generate_description(
-                            product.product_id, keywords, product.basic_info
+                            product.product_id, features, product.basic_info
                         )
 
                         if result["success"]:

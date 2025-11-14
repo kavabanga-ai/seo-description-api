@@ -17,21 +17,42 @@ class DifyAIService:
             "Content-Type": "application/json",
         }
 
+    def _parse_features(self, features: list) -> str:
+        """Parse features list into a readable format for the AI prompt"""
+        if not features:
+            return "No features provided"
+
+        feature_lines = []
+        for feature in features:
+            label = feature.get("label", "")
+            values = feature.get("values", [])
+            if values and len(values) > 0:
+                value = values[0].get("value", "")
+                if label and value:
+                    feature_lines.append(f"- {label}: {value}")
+
+        return "\n".join(feature_lines) if feature_lines else "No features provided"
+
     async def generate_description(
-        self, product_id: str, keywords: list, basic_info: str = None
+        self, product_id: str, features: list, basic_info: str = None
     ) -> Dict[str, Any]:
         """Generate SEO description using Dify AI"""
         try:
+            # Parse features into a readable format
+            features_text = self._parse_features(features)
+
             # Prepare the prompt
-            keywords_str = ", ".join(keywords)
-            prompt = f"""Generate an SEO-optimized product description for:
-Keywords: {keywords_str}
-{f'Basic Info: {basic_info}' if basic_info else ''}
+            prompt = f"""Generate an SEO-optimized product description in Russian based on the following product features:
+
+Product Features:
+{features_text}
+
+{f'Additional Info: {basic_info}' if basic_info else ''}
 
 Please provide:
-1. A compelling product description with perfect matched and trending keywords
+1. A compelling product description with SEO keywords based on the features
 2. After the description, add "Характеристики:" on a new line
-3. Below "Характеристики:" provide key specifications as bullet points
+3. Below "Характеристики:" provide key specifications as bullet points based on the features
 Make it SEO-friendly and engaging and must be in Russian Language"""
 
             # Increased timeout to 120 seconds (2 minutes)

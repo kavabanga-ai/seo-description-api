@@ -1,13 +1,26 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from pydantic import BaseModel
+
+
+# Feature value structure
+class FeatureValue(BaseModel):
+    id: str
+    value: str
+
+
+# Feature structure
+class Feature(BaseModel):
+    featureId: int
+    label: str
+    values: List[FeatureValue]
 
 
 # Request schemas
 class GenerateDescriptionRequest(BaseModel):
     product_id: str
-    keywords: Optional[List[str]] = None
+    features: Optional[List[Feature]] = None
     basic_info: Optional[str] = None
 
 
