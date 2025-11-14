@@ -11,8 +11,17 @@ def get_product(db: Session, product_id: str):
 
 
 def create_product(db: Session, request: GenerateDescriptionRequest):
-    # Convert features to JSON string - features are already simplified by validator
-    features_json = json.dumps(request.features if request.features else [])
+    # Convert features to JSON string - handle both Feature objects and dicts
+    features_list = []
+    if request.features:
+        for feature in request.features:
+            if isinstance(feature, dict):
+                features_list.append(feature)
+            else:
+                # Convert Feature object to dict
+                features_list.append({"label": feature.label, "value": feature.value})
+
+    features_json = json.dumps(features_list)
 
     db_product = Product(
         product_id=request.product_id,
