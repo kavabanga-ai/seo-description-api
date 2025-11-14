@@ -1,27 +1,46 @@
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel
-
-
-# Feature value structure
-class FeatureValue(BaseModel):
-    id: str
-    value: str
+from pydantic import BaseModel, field_validator
 
 
-# Feature structure
+# Simple Feature structure
 class Feature(BaseModel):
-    featureId: int
     label: str
-    values: List[FeatureValue]
+    value: str
 
 
 # Request schemas
 class GenerateDescriptionRequest(BaseModel):
     product_id: str
-    features: Optional[List[Feature]] = None
+    features: Optional[Union[List[Feature], List[Dict[str, Any]]]] = None
     basic_info: Optional[str] = None
+
+    @field_validator("features", mode="before")
+    @classmethod
+    def parse_features(cls, v):
+        """Parse features - supports both simple and complex formats"""
+        if not v:
+            return []
+
+        simplified = []
+        for item in v:
+            if isinstance(item, dict):
+                # Handle complex format from client
+                if "label" in item and "values" in item:
+                    label = item["label"]
+                    values = item.get("values", [])
+                    if values and len(values) > 0:
+                        value = values[0].get("value", "")
+                        if label and value:
+                            simplified.append({"label": label, "value": value})
+                # Handle simple format
+                elif "label" in item and "value" in item:
+                    simplified.append({"label": item["label"], "value": item["value"]})
+            elif hasattr(item, "label") and hasattr(item, "value"):
+                simplified.append({"label": item.label, "value": item.value})
+
+        return simplified
 
 
 class GenerateDescriptionBatchRequest(BaseModel):

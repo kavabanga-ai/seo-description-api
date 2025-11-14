@@ -25,11 +25,9 @@ class DifyAIService:
         feature_lines = []
         for feature in features:
             label = feature.get("label", "")
-            values = feature.get("values", [])
-            if values and len(values) > 0:
-                value = values[0].get("value", "")
-                if label and value:
-                    feature_lines.append(f"- {label}: {value}")
+            value = feature.get("value", "")
+            if label and value:
+                feature_lines.append(f"- {label}: {value}")
 
         return "\n".join(feature_lines) if feature_lines else "No features provided"
 
